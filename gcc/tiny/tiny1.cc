@@ -14,7 +14,7 @@
 #include "langhooks.h"
 #include "langhooks-def.h"
 #include "common/common-target.h"
-#include "tiny/tiny-lexer.h"
+#include "tiny/tiny-parser.h"
 
 /* Language-dependent contents of a type.  */
 
@@ -72,51 +72,6 @@ tiny_langhook_init (void)
   build_common_builtin_nodes ();
 
   return true;
-}
-
-static void
-tiny_parse_file (const char *filename)
-{
-  FILE *file = fopen (filename, "r");
-  if (file == NULL)
-    {
-      fatal_error (UNKNOWN_LOCATION, "cannot open filename %s: %m", filename);
-    }
-
-  // Here we would parse our file
-  Tiny::Lexer lex (filename, file);
-
-  Tiny::const_TokenPtr tok = lex.peek_token ();
-  for (;;)
-    {
-      bool has_text = tok->get_id () == Tiny::IDENTIFIER
-		      || tok->get_id () == Tiny::INTEGER_LITERAL
-		      || tok->get_id () == Tiny::REAL_LITERAL
-		      || tok->get_id () == Tiny::STRING_LITERAL;
-
-      location_t loc = tok->get_locus ();
-
-      fprintf (stderr, "<id=%s%s, %s, line=%d, col=%d>\n", tok->token_id_to_str (),
-	       has_text ? (std::string(", text=") + tok->get_str ()).c_str () : "",
-	       LOCATION_FILE (loc), LOCATION_LINE (loc), LOCATION_COLUMN (loc));
-
-      if (tok->get_id() == Tiny::END_OF_FILE)
-          break;
-
-      lex.skip_token ();
-      tok = lex.peek_token ();
-    }
-
-  fclose (file);
-}
-
-static void
-tiny_parse_files (int num_files, const char **files)
-{
-  for (int i = 0; i < num_files; i++)
-    {
-      tiny_parse_file (files[i]);
-    }
 }
 
 static void
@@ -204,40 +159,6 @@ static tree
 tiny_langhook_getdecls (void)
 {
   return NULL;
-}
-
-tree
-convert (tree type, tree expr)
-{
-//   if (type == error_mark_node
-//       || expr == error_mark_node
-//       || TREE_TYPE (expr) == error_mark_node)
-//     return error_mark_node;
-
-//   if (type == TREE_TYPE (expr))
-//     return expr;
-
-//   if (TYPE_MAIN_VARIANT (type) == TYPE_MAIN_VARIANT (TREE_TYPE (expr)))
-//     return fold_convert (type, expr);
-
-//   switch (TREE_CODE (type))
-//     {
-//     case VOID_TYPE:
-//     case BOOLEAN_TYPE:
-//       return fold_convert (type, expr);
-//     case INTEGER_TYPE:
-//       return fold (convert_to_integer (type, expr));
-//     case POINTER_TYPE:
-//       return fold (convert_to_pointer (type, expr));
-//     case REAL_TYPE:
-//       return fold (convert_to_real (type, expr));
-//     case COMPLEX_TYPE:
-//       return fold (convert_to_complex (type, expr));
-//     default:
-//       break;
-//     }
-
-  gcc_unreachable ();
 }
 
 #undef LANG_HOOKS_NAME
