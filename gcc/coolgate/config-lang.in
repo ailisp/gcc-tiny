@@ -1,0 +1,14 @@
+# gcc-src/gcc/config/config-lang.in
+language="coolgate"
+
+compilers="coolgate1\$(exeext)"
+
+target_libs=""
+
+gtfiles="\$(srcdir)/coolgate/coolgate1.cc"
+
+# We will write the coolgate FE in C++
+lang_requires_boot_languages=c++
+
+# Do not build by default
+build_by_default="no"

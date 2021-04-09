@@ -1,0 +1,83 @@
+GCOOLGATE_INSTALL_NAME := $(shell echo gcoolgate|sed '$(program_transform_name)')
+GCOOLGATE_TARGET_INSTALL_NAME := $(target_noncanonical)-$(shell echo gcoolgate|sed '$(program_transform_name)')
+
+coolgate: coolgate1$(exeext)
+
+.PHONY: coolgate
+
+# Driver
+
+GCOOLGATE_OBJS = \
+   $(GCC_OBJS) \
+   coolgate/coolgatespec.o \
+   $(END)
+
+gcoolgate$(exeext): $(GCOOLGATE_OBJS) $(EXTRA_GCC_OBJS) libcommon-target.a $(LIBDEPS)
+	+$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ \
+	  $(GCOOLGATE_OBJS) $(EXTRA_GCC_OBJS) libcommon-target.a \
+	  $(EXTRA_GCC_LIBS) $(LIBS)
+
+# The compiler proper
+
+coolgate_OBJS = \
+    coolgate/coolgate1.o \
+    coolgate/coolgate-parser.o \
+    coolgate/coolgate-token.o \
+    coolgate/coolgate-lexer.o \
+    coolgate/coolgate-symbol-mapping.o \
+    coolgate/coolgate-scope.o \
+    coolgate/coolgate-convert.o \
+    $(END)
+
+coolgate1$(exeext): attribs.o $(coolgate_OBJS) $(BACKEND) $(LIBDEPS)
+	+$(LLINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ \
+	      attribs.o $(coolgate_OBJS) $(BACKEND) $(LIBS) $(BACKENDLIBS)
+
+coolgate.all.cross:
+
+coolgate.start.encap: gcoolgate$(exeext)
+coolgate.rest.encap:
+
+coolgate.install-common: installdirs
+	-rm -f $(DESTDIR)$(bindir)/$(GCOOLGATE_INSTALL_NAME)$(exeext)
+	$(INSTALL_PROGRAM) gcoolgate$(exeext) $(DESTDIR)$(bindir)/$(GCOOLGATE_INSTALL_NAME)$(exeext)
+	rm -f $(DESTDIR)$(bindir)/$(GCOOLGATE_TARGET_INSTALL_NAME)$(exeext); \
+	( cd $(DESTDIR)$(bindir) && \
+      $(LN) $(GCOOLGATE_INSTALL_NAME)$(exeext) $(GCOOLGATE_TARGET_INSTALL_NAME)$(exeext) ); \
+
+# Required goals, they still do nothing
+coolgate.install-man:
+coolgate.install-info:
+coolgate.install-pdf:
+coolgate.install-plugin:
+coolgate.install-html:
+coolgate.info:
+coolgate.dvi:
+coolgate.pdf:
+coolgate.html:
+coolgate.man:
+coolgate.mostlyclean:
+coolgate.clean:
+coolgate.distclean:
+coolgate.maintainer-clean:
+
+# make uninstall
+coolgate.uninstall:
+	-rm -f gcoolgate$(exeext) coolgate1$(exeext)
+	-rm -f $(coolgate_OBJS)
+
+# Used for handling bootstrap
+coolgate.stage1: stage1-start
+	-mv coolgate/*$(objext) stage1/coolgate
+coolgate.stage2: stage2-start
+	-mv coolgate/*$(objext) stage2/coolgate
+coolgate.stage3: stage3-start
+	-mv coolgate/*$(objext) stage3/coolgate
+coolgate.stage4: stage4-start
+	-mv coolgate/*$(objext) stage4/coolgate
+coolgate.stageprofile: stageprofile-start
+	-mv coolgate/*$(objext) stageprofile/coolgate
+coolgate.stagefeedback: stagefeedback-start
+	-mv coolgate/*$(objext) stagefeedback/coolgate
+
+selftest-coolgate:
